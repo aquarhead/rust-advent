@@ -35,10 +35,10 @@ fn p1(seeds: &Vec<u64>, mappings: &Vec<Vec<(u64, u64, u64)>>) -> u64 {
 
   for ranges in mappings {
     let mut dest = vec![];
-    for (dest_start, src_start, range_len) in ranges {
+    for (dest_start, src_start, range_len) in ranges.iter().copied() {
       let (mapped, rest): (Vec<_>, Vec<_>) = src
         .into_iter()
-        .partition(|s| *s >= *src_start && *s < src_start + range_len);
+        .partition(|s| *s >= src_start && *s < src_start + range_len);
 
       dest.extend(mapped.into_iter().map(|m| dest_start + (m - src_start)));
       src = rest;
@@ -63,10 +63,7 @@ fn p2(seeds: &Vec<u64>, mappings: &Vec<Vec<(u64, u64, u64)>>) -> u64 {
 
   for ranges in mappings {
     let mut dest = vec![];
-    for (dest_start, src_start, range_len) in ranges {
-      let dest_start = *dest_start;
-      let src_start = *src_start;
-      let range_len = *range_len;
+    for (dest_start, src_start, range_len) in ranges.iter().copied() {
       let mut rest = vec![];
       while let Some((mut begin, mut end)) = src.pop() {
         if (begin >= src_start + range_len) || (end < src_start) {
