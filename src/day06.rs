@@ -1,0 +1,42 @@
+pub fn solve(input: &str) -> (u32, u64) {
+  let (times_str, records_str) = input.trim().split_once("\n").unwrap();
+  let times_str = times_str.split_once(": ").unwrap().1.trim();
+  let records_str = records_str.split_once(": ").unwrap().1.trim();
+
+  let times = times_str.split_ascii_whitespace().map(|n| n.parse::<u32>().unwrap());
+  let records = records_str.split_ascii_whitespace().map(|n| n.parse::<u32>().unwrap());
+
+  let p1 = times.zip(records).map(|(s, r)| p1(s, r)).fold(1, |acc, n| acc * n);
+
+  let secs = times_str.replace(" ", "").parse::<u64>().unwrap();
+  let r = records_str.replace(" ", "").parse::<u64>().unwrap();
+  (p1, p2(secs, r))
+}
+
+fn p1(secs: u32, record: u32) -> u32 {
+  (1..secs).filter(|hold| (secs - hold) * hold > record).count() as u32
+}
+
+fn p2(secs: u64, record: u64) -> u64 {
+  let holds = (1..).take_while(|hold| (secs - hold) * hold <= record).count() as u64;
+  let travels = (1..).take_while(|t| (secs - t) * t <= record).count() as u64;
+
+  secs - holds - travels - 1
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_races() {
+    assert_eq!(4, p1(7, 9));
+    assert_eq!(8, p1(15, 40));
+    assert_eq!(9, p1(30, 200));
+  }
+
+  #[test]
+  fn test_p2() {
+    assert_eq!(71503, p2(71530, 940200));
+  }
+}
