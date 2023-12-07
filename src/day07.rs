@@ -38,11 +38,78 @@ impl HandType {
       _ => panic!("impossible"),
     }
   }
+
+  fn from_hand_joker(hand: &str) -> Self {
+    let (grp, jokers) = hand.chars().fold((HashMap::<char, u8>::new(), 0), |mut acc, ch| {
+      if ch == 'J' {
+        acc.1 += 1;
+      } else {
+        acc.0.entry(ch).and_modify(|x| *x += 1).or_insert(1);
+      }
+
+      acc
+    });
+
+    match grp.len() {
+      // all joker
+      0 => Self::FiveOAK,
+      // all joker can convert to the same card
+      1 => Self::FiveOAK,
+      // 2 distinct, non-joker cards
+      2 => {
+        match *grp.values().max().unwrap() {
+          // xyJJJ -> xyyyy
+          1 => Self::FourOAK,
+          2 => match jokers {
+            // xxyyJ -> xxyyy
+            1 => Self::FullHouse,
+            // xyyJJ -> xyyyy
+            2 => Self::FourOAK,
+            _ => panic!("impossible"),
+          },
+          3 => {
+            match jokers {
+              // xxyyy
+              0 => Self::FullHouse,
+              // xyyyJ
+              1 => Self::FourOAK,
+              _ => panic!("impossible"),
+            }
+          }
+          4 => Self::FourOAK,
+          _ => panic!("impossible"),
+        }
+      }
+      // 3 distinct, non-joker cards
+      3 => {
+        match *grp.values().max().unwrap() {
+          // xyzJJ -> xyzzz
+          1 => Self::ThreeOAK,
+          2 => match jokers {
+            // xyyzz
+            0 => Self::TwoPair,
+            // xyzzJ -> xyzzz
+            1 => Self::ThreeOAK,
+            _ => panic!("impossible"),
+          },
+          // xyzzz
+          3 => Self::ThreeOAK,
+          _ => panic!("impossible"),
+        }
+      }
+      // always one pair ??
+      4 => Self::OnePair,
+      // no joker
+      5 => Self::HighCard,
+      _ => panic!("impossible"),
+    }
+  }
 }
 
 #[derive(Debug, Clone)]
 struct Hand {
   typ: HandType,
+  typ_joker: HandType,
   cards: (char, char, char, char, char),
   bid: u64,
 }
@@ -51,6 +118,7 @@ impl Hand {
   fn parse(hand_bid: &str) -> Self {
     let (hand, bid) = hand_bid.split_once(" ").unwrap();
     let typ = HandType::from_hand(hand);
+    let typ_joker = HandType::from_hand_joker(hand);
     let mut hand = hand.chars();
     let cards = (
       hand.next().unwrap(),
@@ -61,14 +129,19 @@ impl Hand {
     );
     let bid = bid.parse().unwrap();
 
-    Self { typ, cards, bid }
+    Self {
+      typ,
+      typ_joker,
+      cards,
+      bid,
+    }
   }
 }
 
-pub fn solve(input: &str) -> u64 {
+pub fn solve(input: &str) -> (u64, u64) {
   let hands: Vec<_> = input.trim().lines().map(Hand::parse).collect();
 
-  p1(hands.clone())
+  (p1(hands.clone()), p2(hands.clone()))
 }
 
 fn p1(mut hands: Vec<Hand>) -> u64 {
@@ -80,6 +153,28 @@ fn p1(mut hands: Vec<Hand>) -> u64 {
       char_ord(a.cards.2).cmp(&char_ord(b.cards.2)),
       char_ord(a.cards.3).cmp(&char_ord(b.cards.3)),
       char_ord(a.cards.4).cmp(&char_ord(b.cards.4)),
+    ]
+    .into_iter()
+    .skip_while(|x| x == &Ordering::Equal)
+    .next()
+    .unwrap()
+  });
+
+  hands
+    .into_iter()
+    .enumerate()
+    .fold(0, |acc, (idx, hand)| acc + (idx as u64 + 1) * hand.bid)
+}
+
+fn p2(mut hands: Vec<Hand>) -> u64 {
+  hands.sort_by(|a, b| {
+    [
+      a.typ_joker.cmp(&b.typ_joker),
+      char_ord_joker(a.cards.0).cmp(&char_ord_joker(b.cards.0)),
+      char_ord_joker(a.cards.1).cmp(&char_ord_joker(b.cards.1)),
+      char_ord_joker(a.cards.2).cmp(&char_ord_joker(b.cards.2)),
+      char_ord_joker(a.cards.3).cmp(&char_ord_joker(b.cards.3)),
+      char_ord_joker(a.cards.4).cmp(&char_ord_joker(b.cards.4)),
     ]
     .into_iter()
     .skip_while(|x| x == &Ordering::Equal)
@@ -112,6 +207,25 @@ fn char_ord(a: char) -> u8 {
   }
 }
 
+fn char_ord_joker(a: char) -> u8 {
+  match a {
+    'J' => 0,
+    '2' => 1,
+    '3' => 2,
+    '4' => 3,
+    '5' => 4,
+    '6' => 5,
+    '7' => 6,
+    '8' => 7,
+    '9' => 8,
+    'T' => 9,
+    'Q' => 10,
+    'K' => 11,
+    'A' => 12,
+    _ => panic!("impossible"),
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -126,6 +240,6 @@ KTJJT 220
 QQQJA 483
     "#;
 
-    assert_eq!(6440, solve(input));
+    assert_eq!((6440, 5905), solve(input));
   }
 }
