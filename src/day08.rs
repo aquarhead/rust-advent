@@ -1,33 +1,22 @@
 use std::collections::HashMap;
 
-pub fn solve(input: &str) -> (u32, u64) {
+pub fn solve(input: &str) -> (u64, u64) {
   let (inst, map) = input.trim().split_once("\n\n").unwrap();
 
   let inst = inst.chars().collect::<Vec<_>>();
-  let map = map.trim().lines().fold(HashMap::new(), |mut acc, line| {
-    let (from, to) = line.split_once(" = ").unwrap();
-    let to = to
-      .trim_start_matches("(")
-      .trim_end_matches(")")
-      .split_once(", ")
-      .unwrap();
-    acc.insert(from, to);
+  let map = map
+    .trim()
+    .lines()
+    .map(|line| {
+      (
+        line.get(0..=2).unwrap(),
+        (line.get(7..=9).unwrap(), line.get(12..=14).unwrap()),
+      )
+    })
+    .collect::<HashMap<_, _>>();
 
-    acc
-  });
-
-  let mut loc = "AAA";
-  let mut p1 = 0;
-  while loc != "ZZZ" {
-    match inst[p1 % inst.len()] {
-      'L' => loc = map.get(loc).unwrap().0,
-      'R' => loc = map.get(loc).unwrap().1,
-      _ => panic!("impossible"),
-    }
-    p1 += 1;
-  }
-
-  let locs = map.keys().filter(|k| k.ends_with('A')).map(|x| *x).collect::<Vec<_>>();
+  let mut locs = map.keys().filter(|k| k.ends_with('A')).map(|x| *x).collect::<Vec<_>>();
+  locs.sort();
   let steps = locs
     .into_iter()
     .map(|mut loc| {
@@ -44,10 +33,10 @@ pub fn solve(input: &str) -> (u32, u64) {
     })
     .collect::<Vec<_>>();
 
-  let mut p2 = steps[0] as u64;
+  let mut p2 = steps[0];
   while steps.iter().any(|s| p2 % *s != 0) {
     p2 += steps[0];
   }
 
-  (p1 as u32, p2)
+  (steps[0], p2)
 }
