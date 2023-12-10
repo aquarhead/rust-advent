@@ -7,7 +7,7 @@ pub fn solve(input: &str) -> (u64, u64) {
   let mut map: Map = HashMap::new();
   for (row, line) in input.trim().lines().enumerate() {
     for (col, ch) in line.trim().chars().enumerate() {
-      map.insert((row as i32 + 1, col as i32 + 1), ch);
+      map.insert((row as i32, col as i32), ch);
     }
   }
 
@@ -75,104 +75,114 @@ pub fn solve(input: &str) -> (u64, u64) {
     p1 += 1;
   }
 
-  // replace junk pipes ?
+  // p2, first replace junk pipes
   for (p, tile) in map.iter_mut() {
     if !visited.contains(p) {
       *tile = '.';
     }
   }
 
-  // add outer ring ?
-  let max = map.keys().max().unwrap().clone();
-  for col in 0..=(max.1 + 1) {
-    map.insert((0, col), '.');
-    map.insert((max.0 + 1, col), '.');
-  }
-  for row in 0..=(max.0 + 1) {
-    map.insert((row, 0), '.');
-    map.insert((row, max.1 + 1), '.');
-  }
+  let max = *map.keys().max().unwrap();
 
-  // flood 0,0 for p2
-  let mut next = vec![(0, 0)];
-  while let Some(p) = next.pop() {
-    map.insert(p, 'O');
-
-    // direct
-    if map.get(&up(p)) == Some(&'.') {
-      next.push(up(p));
-    }
-    if map.get(&down(p)) == Some(&'.') {
-      next.push(down(p));
-    }
-    if map.get(&left(p)) == Some(&'.') {
-      next.push(left(p));
-    }
-    if map.get(&right(p)) == Some(&'.') {
-      next.push(right(p));
-    }
-
-    // corner
-    let possible_corners = [
-      (up as fn(Pos) -> Pos, 'J', left as fn(Pos) -> Pos, '7'),
-      (up, 'J', right, 'F'),
-      (down, 'F', left, 'J'),
-      (down, '7', right, 'L'),
-    ];
-    for (v, ve, h, he) in possible_corners {
-      if map.get(&v(p)) == Some(&ve)
-        && map.get(&h(p)) == Some(&he)
-        && map.get(&(v(h(p)))) == Some(&'.')
-      {
-        next.push(v(h(p)));
-      }
-    }
-
-    // leaking
-    let possible_leaking = [
-      (up as fn(Pos) -> Pos, 'J', '|', '7'),
-      (up, 'L', '|', 'F'),
-      (down, '7', '|', 'J'),
-      (down, 'F', '|', 'L'),
-      (left, '7', '-', 'F'),
-      (left, 'J', '-', 'L'),
-      (right, 'F', '-', '7'),
-      (right, 'L', '-', 'J'),
-    ];
-
-    for (movement, start, cont, end) in possible_leaking {
-      if map.get(&movement(p)) == Some(&start) {
-        let mut leaking = true;
-        let mut p_move = movement(movement(p));
-        loop {
-          match map.get(&p_move) {
-            Some(tile) if *tile == cont => {
-              p_move = movement(p_move);
-            }
-            Some(tile) if *tile == end => {
-              p_move = movement(p_move);
-              if map.get(&p_move) == Some(&start) {
-                p_move = movement(p_move);
-              } else {
-                break;
-              }
-            }
-            _ => {
-              leaking = false;
-              break;
-            }
+  let mut sub_visited = HashSet::new();
+  let mut visit = vec![(0, 0)];
+  while let Some(sp) = visit.pop() {
+    let mut try_visit = Vec::new();
+    match (sp.0 % 2, sp.1 % 2) {
+      (0, 0) => {
+        // top left
+        if sp.0 > 0 {
+          try_visit.push((sp.0 - 1, sp.1));
+        }
+        if sp.1 > 0 {
+          try_visit.push((sp.0, sp.1 - 1));
+        }
+        match *map.get(&(sp.0 / 2, sp.1 / 2)).unwrap() {
+          'J' => {}
+          'L' | '|' => try_visit.push((sp.0 + 1, sp.1)),
+          '7' | '-' => try_visit.push((sp.0, sp.1 + 1)),
+          _ => {
+            try_visit.push((sp.0 + 1, sp.1));
+            try_visit.push((sp.0, sp.1 + 1));
           }
         }
-        if leaking && map.get(&p_move) == Some(&'.') {
-          next.push(p_move);
+      }
+      (0, 1) => {
+        // top right
+        if sp.0 > 0 {
+          try_visit.push((sp.0 - 1, sp.1));
+        }
+        if sp.1 < max.1 * 2 {
+          try_visit.push((sp.0, sp.1 + 1));
+        }
+        match *map.get(&(sp.0 / 2, sp.1 / 2)).unwrap() {
+          'L' => {}
+          'J' | '|' => try_visit.push((sp.0 + 1, sp.1)),
+          'F' | '-' => try_visit.push((sp.0, sp.1 - 1)),
+          _ => {
+            try_visit.push((sp.0 + 1, sp.1));
+            try_visit.push((sp.0, sp.1 - 1));
+          }
         }
       }
-    }
+      (1, 0) => {
+        // bot left
+        if sp.0 < max.0 * 2 {
+          try_visit.push((sp.0 + 1, sp.1));
+        }
+        if sp.1 > 0 {
+          try_visit.push((sp.0, sp.1 - 1));
+        }
+        match *map.get(&(sp.0 / 2, sp.1 / 2)).unwrap() {
+          '7' => {}
+          'J' | '-' => try_visit.push((sp.0, sp.1 + 1)),
+          'F' | '|' => try_visit.push((sp.0 - 1, sp.1)),
+          _ => {
+            try_visit.push((sp.0, sp.1 + 1));
+            try_visit.push((sp.0 - 1, sp.1));
+          }
+        }
+      }
+      (1, 1) => {
+        //bot right
+        if sp.0 < max.0 * 2 {
+          try_visit.push((sp.0 + 1, sp.1));
+        }
+        if sp.1 < max.0 * 2 {
+          try_visit.push((sp.0, sp.1 + 1));
+        }
+        match *map.get(&(sp.0 / 2, sp.1 / 2)).unwrap() {
+          'F' => {}
+          'L' | '-' => try_visit.push((sp.0, sp.1 - 1)),
+          '7' | '|' => try_visit.push((sp.0 - 1, sp.1)),
+          _ => {
+            try_visit.push((sp.0, sp.1 - 1));
+            try_visit.push((sp.0 - 1, sp.1));
+          }
+        }
+      }
+      _ => panic!("impossible"),
+    };
+
+    visit.extend(try_visit.into_iter().filter(|p| !sub_visited.contains(p)));
+
+    sub_visited.insert(sp);
   }
 
-  let p2 = map.values().filter(|tile| **tile == '.').count();
-
-  dbg_map(&map);
+  let p2 = map
+    .into_iter()
+    .filter(|(p, t)| {
+      *t == '.'
+        && [
+          (p.0 * 2, p.1 * 2),
+          (p.0 * 2, p.1 * 2 + 1),
+          (p.0 * 2 + 1, p.1 * 2),
+          (p.0 * 2 + 1, p.1 * 2 + 1),
+        ]
+        .iter()
+        .any(|sp| !sub_visited.contains(sp))
+    })
+    .count();
 
   (p1 / 2, p2 as u64)
 }
@@ -234,24 +244,30 @@ fn replace_start(map: &mut Map) -> Pos {
   p
 }
 
-fn dbg_map(map: &Map) {
-  let max = map.keys().max().unwrap();
-  for row in 1..=max.0 {
-    for col in 1..=max.1 {
-      match *map.get(&(row, col)).unwrap() {
-        'J' => print!("⌟"),
-        '7' => print!("⌝"),
-        'F' => print!("⌜"),
-        ch => print!("{}", ch),
-      }
-    }
-    print!("\n")
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn test1() {
+    let input = r#"
+S7
+LJ
+    "#;
+
+    assert_eq!((2, 0), solve(input));
+  }
+
+  #[test]
+  fn test2() {
+    let input = r#"
+S-7
+|.|
+L-J
+    "#;
+
+    assert_eq!((4, 1), solve(input));
+  }
 
   #[test]
   fn test_example() {
