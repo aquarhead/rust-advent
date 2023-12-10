@@ -9,10 +9,11 @@ mod day06;
 mod day07;
 mod day08;
 mod day09;
+mod day10;
 
 fn main() {
-  let content = std::fs::read_to_string("inputs/day09.txt").expect("read file");
-  let (p1, p2) = day09::solve(&content);
+  let content = std::fs::read_to_string("inputs/day10.txt").expect("read file");
+  let (p1, p2) = day10::solve(&content);
 
   println!("part1: {}", p1);
   println!("part2: {}", p2);
