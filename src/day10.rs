@@ -1,13 +1,13 @@
 use std::collections::{HashMap, HashSet};
 
-type Pos = (usize, usize);
+type Pos = (i32, i32);
 type Map = HashMap<Pos, char>;
 
 pub fn solve(input: &str) -> (u64, u64) {
   let mut map: Map = HashMap::new();
   for (row, line) in input.trim().lines().enumerate() {
     for (col, ch) in line.trim().chars().enumerate() {
-      map.insert((row + 1, col + 1), ch);
+      map.insert((row as i32 + 1, col as i32 + 1), ch);
     }
   }
 
@@ -82,7 +82,99 @@ pub fn solve(input: &str) -> (u64, u64) {
     }
   }
 
-  (p1 / 2, 0)
+  // add outer ring ?
+  let max = map.keys().max().unwrap().clone();
+  for col in 0..=(max.1 + 1) {
+    map.insert((0, col), '.');
+    map.insert((max.0 + 1, col), '.');
+  }
+  for row in 0..=(max.0 + 1) {
+    map.insert((row, 0), '.');
+    map.insert((row, max.1 + 1), '.');
+  }
+
+  // flood 0,0 for p2
+  let mut next = vec![(0, 0)];
+  while let Some(p) = next.pop() {
+    map.insert(p, 'O');
+
+    // direct
+    if map.get(&up(p)) == Some(&'.') {
+      next.push(up(p));
+    }
+    if map.get(&down(p)) == Some(&'.') {
+      next.push(down(p));
+    }
+    if map.get(&left(p)) == Some(&'.') {
+      next.push(left(p));
+    }
+    if map.get(&right(p)) == Some(&'.') {
+      next.push(right(p));
+    }
+
+    // corner
+    let possible_corners = [
+      (up as fn(Pos) -> Pos, 'J', left as fn(Pos) -> Pos, '7'),
+      (up, 'J', right, 'F'),
+      (down, 'F', left, 'J'),
+      (down, '7', right, 'L'),
+    ];
+    for (v, ve, h, he) in possible_corners {
+      if map.get(&v(p)) == Some(&ve)
+        && map.get(&h(p)) == Some(&he)
+        && map.get(&(v(h(p)))) == Some(&'.')
+      {
+        next.push(v(h(p)));
+      }
+    }
+
+    // leaking
+    let possible_leaking = [
+      (up as fn(Pos) -> Pos, 'J', '|', '7'),
+      (up, 'L', '|', 'F'),
+      (down, '7', '|', 'J'),
+      (down, 'F', '|', 'L'),
+      (left, '7', '-', 'F'),
+      (left, 'J', '-', 'L'),
+      (right, 'F', '-', '7'),
+      (right, 'L', '-', 'J'),
+    ];
+
+    for (movement, start, cont, end) in possible_leaking {
+      if map.get(&movement(p)) == Some(&start) {
+        let mut leaking = true;
+        let mut p_move = movement(movement(p));
+        loop {
+          match map.get(&p_move) {
+            Some(tile) if *tile == cont => {
+              p_move = movement(p_move);
+            }
+            Some(tile) if *tile == end => {
+              p_move = movement(p_move);
+              if map.get(&p_move) == Some(&start) {
+                p_move = movement(p_move);
+              } else {
+                break;
+              }
+            }
+            _ => {
+              leaking = false;
+              break;
+            }
+          }
+        }
+        if leaking && map.get(&p_move) == Some(&'.') {
+          next.push(p_move);
+        }
+      }
+    }
+  }
+
+  let p2 = map.values().filter(|tile| **tile == '.').count();
+
+  dbg_map(&map);
+
+  (p1 / 2, p2 as u64)
 }
 
 fn up(p: Pos) -> Pos {
@@ -177,18 +269,18 @@ LJ...
   #[test]
   fn test_example2() {
     let input = r#"
-...........
-.S-------7.
-.|F-----7|.
-.||.....||.
-.||.....||.
-.|L-7.F-J|.
-.|..|.|..|.
-.L--J.L--J.
-...........
+..........
+.S------7.
+.|F----7|.
+.||....||.
+.||....||.
+.|L-7F-J|.
+.|..||..|.
+.L--JL--J.
+..........
     "#;
 
-    assert_eq!((23, 4), solve(input));
+    assert_eq!((22, 4), solve(input));
   }
 
   #[test]
