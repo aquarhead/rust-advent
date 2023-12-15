@@ -1,13 +1,13 @@
 pub fn solve(input: &str) -> (u64, u64) {
-  let p1 = input.trim().split(",").map(|s| hash(s)).sum();
+  let p1 = input.trim().split(',').map(hash).sum();
 
   let p2 = input
     .trim()
-    .split(",")
+    .split(',')
     .fold(vec![Vec::new(); 256], |mut boxes, inst| {
       let (label, opt_val) = inst.split_once(['=', '-']).unwrap();
       let b = hash(label) as usize;
-      if let Some(v) = opt_val.parse::<u64>().ok() {
+      if let Ok(v) = opt_val.parse::<u64>() {
         if let Some(found) = boxes[b].iter().position(|(k, _)| *k == label) {
           boxes[b][found] = (label, v);
         } else {
