@@ -204,7 +204,7 @@ fn right(p: Pos) -> Pos {
 }
 
 fn replace_start(map: &mut Map) -> Pos {
-  let p = map.iter().find(|(_, ch)| **ch == 'S').unwrap().0.clone();
+  let p = *map.iter().find(|(_, ch)| **ch == 'S').unwrap().0;
   let mut connected = (false, false, false, false);
   match map.get(&up(p)) {
     Some('|') => connected.0 = true,

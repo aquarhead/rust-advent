@@ -1,5 +1,6 @@
 pub fn solve() {
-  let content = std::fs::read_to_string("inputs/day01.txt").expect("read input");
+  let content =
+    std::fs::read_to_string("inputs/day01.txt").expect("read input");
 
   let p1: u32 = content
     .trim()
@@ -12,7 +13,7 @@ pub fn solve() {
         .parse::<u32>()
         .expect("parse first number");
       let mut last = first;
-      while let Some(n) = nums.next() {
+      for n in nums {
         last = n.parse::<u32>().expect("parse number");
       }
       first * 10 + last
@@ -21,7 +22,9 @@ pub fn solve() {
 
   println!("part1: {}", p1);
 
-  let str_digit = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+  let str_digit = [
+    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+  ];
 
   let p2: u32 = content
     .trim()

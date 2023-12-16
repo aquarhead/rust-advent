@@ -11,7 +11,7 @@ fn p1(input: &str) -> u32 {
   for line in input.trim().lines() {
     ln += 1;
     // first line
-    if next_pos.len() == 0 {
+    if next_pos.is_empty() {
       next_pos = vec![0; line.len()];
     }
     for (i, ch) in line.char_indices() {
@@ -34,7 +34,7 @@ fn p2(input: &str) -> u32 {
   let mut fixed_cols = Vec::new();
   for (r, line) in input.trim().lines().enumerate() {
     fixed_rows.push(VecDeque::new());
-    if fixed_cols.len() == 0 {
+    if fixed_cols.is_empty() {
       fixed_cols = vec![VecDeque::new(); line.len()];
     }
     for (c, ch) in line.char_indices() {

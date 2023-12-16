@@ -33,7 +33,7 @@ fn expand(map: &Map, times: u64) -> u64 {
     let (cur, rest): (Vec<_>, Vec<_>) =
       poss.into_iter().partition(|p| p.0 == r);
     poss = rest;
-    if cur.len() > 0 {
+    if !cur.is_empty() {
       for p in cur {
         after_row_expand.push((p.0 + expand, p.1));
       }
@@ -48,7 +48,7 @@ fn expand(map: &Map, times: u64) -> u64 {
     let (cur, rest): (Vec<_>, Vec<_>) =
       after_row_expand.into_iter().partition(|p| p.1 == c);
     after_row_expand = rest;
-    if cur.len() > 0 {
+    if !cur.is_empty() {
       for p in cur {
         after_expand.push((p.0, p.1 + expand));
       }

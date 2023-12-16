@@ -15,9 +15,9 @@ pub fn solve(input: &str) -> (u64, u64) {
 }
 
 fn p1(row: &str) -> u64 {
-  let (conds, record) = row.trim().split_once(" ").unwrap();
+  let (conds, record) = row.trim().split_once(' ').unwrap();
   let record: Vec<_> = record
-    .split(",")
+    .split(',')
     .map(|x| x.parse::<u64>().unwrap())
     .collect();
 
@@ -30,9 +30,9 @@ fn p1(row: &str) -> u64 {
 }
 
 fn p2(row: &str) -> u64 {
-  let (conds, record) = row.trim().split_once(" ").unwrap();
+  let (conds, record) = row.trim().split_once(' ').unwrap();
   let record: Vec<_> = record
-    .split(",")
+    .split(',')
     .map(|x| x.parse::<u64>().unwrap())
     .collect();
 
@@ -65,7 +65,7 @@ fn d(c: String, record: &[u64]) -> u64 {
         let a = arr.get(&(i - 1, j, 0)).cloned().unwrap_or(0);
         // just closing a series of #
         let b = arr
-          .get(&(i - 1, j - 1, record[j - 1] as u64))
+          .get(&(i - 1, j - 1, record[j - 1]))
           .cloned()
           .unwrap_or(0);
 

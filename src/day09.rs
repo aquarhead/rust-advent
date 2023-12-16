@@ -12,8 +12,8 @@ pub fn solve(input: &str) -> (i64, i64) {
     })
     .collect();
 
-  let p1 = hists.clone().into_par_iter().map(|h| p1(h)).sum();
-  let p2 = hists.into_par_iter().map(|h| p2(h)).sum();
+  let p1 = hists.clone().into_par_iter().map(p1).sum();
+  let p2 = hists.into_par_iter().map(p2).sum();
 
   (p1, p2)
 }

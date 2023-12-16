@@ -81,7 +81,10 @@ fn p2(seeds: &Vec<u64>, mappings: &Vec<Vec<(u64, u64, u64)>>) -> u64 {
           end = src_start + range_len - 1;
         }
 
-        dest.push((dest_start + (begin - src_start), dest_start + (end - src_start)));
+        dest.push((
+          dest_start + (begin - src_start),
+          dest_start + (end - src_start),
+        ));
       }
       src = rest;
     }

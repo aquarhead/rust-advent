@@ -19,7 +19,7 @@ pub fn solve(input: &str) -> (u64, u64) {
     for (c, tile) in line.char_indices() {
       k = (r as i32, c as i32);
       if tile != '.' {
-        map.insert(k.clone(), tile);
+        map.insert(k, tile);
       }
     }
   }
@@ -32,7 +32,7 @@ fn p1(map: &HashMap<Pos, char>, k: Pos, start: (Pos, Direction)) -> u64 {
 
   let mut visited = HashSet::new();
   while let Some(b) = beams.pop() {
-    if !visited.insert(b.clone()) {
+    if !visited.insert(b) {
       continue;
     }
 

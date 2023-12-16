@@ -12,7 +12,7 @@ pub fn solve(input: String) -> (u32, u32) {
       let pos: Pos = (x as i32, y as i32);
       match char {
         '.' => {}
-        x if x >= '0' && x <= '9' => {
+        x if x.is_ascii_digit() => {
           let _ = map.insert(pos, char);
         }
         s => {

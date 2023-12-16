@@ -15,10 +15,16 @@ pub fn solve(input: String) -> (u32, u32) {
     .lines()
     .map(|line| {
       let (_card, n_str) = line.split_once(": ").unwrap();
-      let (wins, have) = n_str.split_once("|").unwrap();
+      let (wins, have) = n_str.split_once('|').unwrap();
       Card {
-        wins: wins.split_whitespace().map(|x| x.parse::<u32>().unwrap()).collect(),
-        have: have.split_whitespace().map(|x| x.parse::<u32>().unwrap()).collect(),
+        wins: wins
+          .split_whitespace()
+          .map(|x| x.parse::<u32>().unwrap())
+          .collect(),
+        have: have
+          .split_whitespace()
+          .map(|x| x.parse::<u32>().unwrap())
+          .collect(),
       }
     })
     .collect();

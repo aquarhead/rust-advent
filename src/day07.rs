@@ -14,10 +14,12 @@ enum HandType {
 
 impl HandType {
   fn from_hand(hand: &str) -> Self {
-    let grp = hand.chars().fold(HashMap::<char, u8>::new(), |mut acc, ch| {
-      acc.entry(ch).and_modify(|x| *x += 1).or_insert(1);
-      acc
-    });
+    let grp = hand
+      .chars()
+      .fold(HashMap::<char, u8>::new(), |mut acc, ch| {
+        acc.entry(ch).and_modify(|x| *x += 1).or_insert(1);
+        acc
+      });
 
     match grp.len() {
       1 => Self::FiveOAK,
@@ -40,15 +42,18 @@ impl HandType {
   }
 
   fn from_hand_joker(hand: &str) -> Self {
-    let (grp, jokers) = hand.chars().fold((HashMap::<char, u8>::new(), 0), |mut acc, ch| {
-      if ch == 'J' {
-        acc.1 += 1;
-      } else {
-        acc.0.entry(ch).and_modify(|x| *x += 1).or_insert(1);
-      }
+    let (grp, jokers) =
+      hand
+        .chars()
+        .fold((HashMap::<char, u8>::new(), 0), |mut acc, ch| {
+          if ch == 'J' {
+            acc.1 += 1;
+          } else {
+            acc.0.entry(ch).and_modify(|x| *x += 1).or_insert(1);
+          }
 
-      acc
-    });
+          acc
+        });
 
     match grp.len() {
       // all joker
@@ -116,7 +121,7 @@ struct Hand {
 
 impl Hand {
   fn parse(hand_bid: &str) -> Self {
-    let (hand, bid) = hand_bid.split_once(" ").unwrap();
+    let (hand, bid) = hand_bid.split_once(' ').unwrap();
     let typ = HandType::from_hand(hand);
     let typ_joker = HandType::from_hand_joker(hand);
     let mut hand = hand.chars();
@@ -155,8 +160,7 @@ fn p1(mut hands: Vec<Hand>) -> u64 {
       char_ord(a.cards.4).cmp(&char_ord(b.cards.4)),
     ]
     .into_iter()
-    .skip_while(|x| x == &Ordering::Equal)
-    .next()
+    .find(|x| x != &Ordering::Equal)
     .unwrap()
   });
 
@@ -177,8 +181,7 @@ fn p2(mut hands: Vec<Hand>) -> u64 {
       char_ord_joker(a.cards.4).cmp(&char_ord_joker(b.cards.4)),
     ]
     .into_iter()
-    .skip_while(|x| x == &Ordering::Equal)
-    .next()
+    .find(|x| x != &Ordering::Equal)
     .unwrap()
   });
 

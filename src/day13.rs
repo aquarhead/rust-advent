@@ -13,7 +13,7 @@ pub fn solve(input: &str) -> (u64, u64) {
       let mut cols = Vec::new();
       for line in p.trim().lines() {
         // first line
-        if cols.len() == 0 {
+        if cols.is_empty() {
           cols = vec![0; line.len()];
         }
         rows.push(line.chars().map(digit).fold(0, |acc, x| (acc << 1) + x));
@@ -33,14 +33,14 @@ pub fn solve(input: &str) -> (u64, u64) {
 fn p1(rows: &[u64], cols: &[u64]) -> u64 {
   for s in 1..cols.len() {
     let (a, b) = cols.split_at(s);
-    if a.into_iter().rev().zip(b).all(|(x, y)| x == y) {
+    if a.iter().rev().zip(b).all(|(x, y)| x == y) {
       return s as u64;
     }
   }
 
   for s in 1..rows.len() {
     let (a, b) = rows.split_at(s);
-    if a.into_iter().rev().zip(b).all(|(x, y)| x == y) {
+    if a.iter().rev().zip(b).all(|(x, y)| x == y) {
       return s as u64 * 100;
     }
   }
@@ -57,7 +57,7 @@ fn p2(mut rows: Vec<u64>, mut cols: Vec<u64>, bad: u64) -> u64 {
 
       for s in 1..cols.len() {
         let (a, b) = cols.split_at(s);
-        if a.into_iter().rev().zip(b).all(|(x, y)| x == y) {
+        if a.iter().rev().zip(b).all(|(x, y)| x == y) {
           let ret = s as u64;
           if ret != bad {
             return ret;
@@ -67,7 +67,7 @@ fn p2(mut rows: Vec<u64>, mut cols: Vec<u64>, bad: u64) -> u64 {
 
       for s in 1..rows.len() {
         let (a, b) = rows.split_at(s);
-        if a.into_iter().rev().zip(b).all(|(x, y)| x == y) {
+        if a.iter().rev().zip(b).all(|(x, y)| x == y) {
           let ret = s as u64 * 100;
           if ret != bad {
             return ret;
