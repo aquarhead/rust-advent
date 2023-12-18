@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 type Pos = (i32, i32);
 
-pub fn solve(input: &str) -> (i32, u64) {
+pub fn solve(input: &str) -> (u64, u64) {
   let mut map = HashMap::new();
 
   let mut row0 = 0;
@@ -36,41 +36,23 @@ pub fn solve(input: &str) -> (i32, u64) {
     }
   }
 
-  let mut visited = HashSet::new();
-  let mut search = vec![(row0 - 1, col0 - 1)];
-  let in_bound = |a: Pos| -> bool {
-    a.0 >= row0 - 1 && a.0 <= row1 + 1 && a.1 >= col0 - 1 && a.1 <= col1 + 1
-  };
-  while let Some(p) = search.pop() {
-    {
-      let np = (p.0 - 1, p.1);
-      if in_bound(np) && !visited.contains(&np) && !map.contains_key(&np) {
-        search.push(np);
+  let mut p1 = 0;
+  for c in col0..=col1 {
+    let mut inside = (false, false);
+    for r in row0..=row1 {
+      if (inside.0 && inside.1) || map.contains_key(&(r, c)) {
+        p1 += 1;
+      }
+      if map.contains_key(&(r, c)) {
+        if map.contains_key(&(r, c - 1)) {
+          inside.0 = !inside.0;
+        }
+        if map.contains_key(&(r, c + 1)) {
+          inside.1 = !inside.1;
+        }
       }
     }
-    {
-      let np = (p.0 + 1, p.1);
-      if in_bound(np) && !visited.contains(&np) && !map.contains_key(&np) {
-        search.push(np);
-      }
-    }
-    {
-      let np = (p.0, p.1 - 1);
-      if in_bound(np) && !visited.contains(&np) && !map.contains_key(&np) {
-        search.push(np);
-      }
-    }
-    {
-      let np = (p.0, p.1 + 1);
-      if in_bound(np) && !visited.contains(&np) && !map.contains_key(&np) {
-        search.push(np);
-      }
-    }
-    visited.insert(p);
   }
-
-  let p1 = ((row1 + 1) - (row0 - 1) + 1) * ((col1 + 1) - (col0 - 1) + 1)
-    - visited.len() as i32;
 
   (p1, 0)
 }
@@ -97,6 +79,25 @@ U 3 (#a77fa3)
 L 2 (#015232)
 U 2 (#7a21e3)
     ";
+
+    //     let input = "
+    // R 6 (#70c710)
+    // D 5 (#0dc571)
+    // L 2 (#5713f0)
+    // D 2 (#d2c081)
+    // R 2 (#59c680)
+    // D 3 (#411b91)
+    // L 1 (#111111)
+    // U 1 (#111111)
+    // L 4 (#8ceee2)
+    // U 2 (#caa173)
+    // L 1 (#1b58a2)
+    // U 2 (#caa171)
+    // R 2 (#7807d2)
+    // U 3 (#a77fa3)
+    // L 2 (#015232)
+    // U 2 (#7a21e3)
+    //     ";
 
     assert_eq!((62, 0), solve(input));
   }
