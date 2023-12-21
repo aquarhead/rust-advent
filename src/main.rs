@@ -18,6 +18,7 @@ mod day15;
 mod day16;
 mod day17;
 mod day18;
+mod day19;
 
 fn main() {
   let content = std::fs::read_to_string("inputs/day18.txt").expect("read file");
