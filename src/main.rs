@@ -21,8 +21,8 @@ mod day18;
 mod day19;
 
 fn main() {
-  let content = std::fs::read_to_string("inputs/day18.txt").expect("read file");
-  let (p1, p2) = day18::solve(&content);
+  let content = std::fs::read_to_string("inputs/day19.txt").expect("read file");
+  let (p1, p2) = day19::solve(&content);
 
   println!("part1: {}", p1);
   println!("part2: {}", p2);
