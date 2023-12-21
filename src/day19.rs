@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 type Part = (u64, u64, u64, u64);
 
@@ -92,7 +92,51 @@ pub fn solve(input: &str) -> (u64, u64) {
     })
     .sum();
 
-  (p1, 0)
+  // p2
+  let mut p2 = 0;
+  let mut search = {
+    let all: HashSet<u16> = HashSet::from_iter(1..=4000);
+    let init = HashMap::from([
+      ('x', all.clone()),
+      ('m', all.clone()),
+      ('a', all.clone()),
+      ('s', all),
+    ]);
+    vec![("in".to_string(), init)]
+  };
+
+  while let Some((wfid, range)) = search.pop() {
+    match wfid.as_str() {
+      "A" => {
+        p2 += range.values().map(|s| s.len()).product::<usize>() as u64;
+        continue;
+      }
+      "R" => continue,
+      _ => {}
+    }
+
+    let (rules, default) = workflows.get(&wfid).unwrap();
+
+    let default_range = rules.iter().fold(range, |mut acc, rule| {
+      let mut rest = acc.clone();
+      // match
+      (*acc.get_mut(&rule.0).unwrap())
+        .retain(|a| a.cmp(&(rule.2 as u16)) == rule.1);
+
+      search.push((rule.3.to_string(), acc));
+
+      // no match
+      (*rest.get_mut(&rule.0).unwrap())
+        .retain(|a| a.cmp(&(rule.2 as u16)) != rule.1);
+
+      rest
+    });
+
+    // default
+    search.push((default.clone(), default_range));
+  }
+
+  (p1, p2)
 }
 
 #[cfg(test)]
@@ -121,6 +165,6 @@ hdj{m>838:A,pv}
 {x=2127,m=1623,a=2188,s=1013}
     "#;
 
-    assert_eq!((19114, 0), solve(input));
+    assert_eq!((19114, 167409079868000), solve(input));
   }
 }
